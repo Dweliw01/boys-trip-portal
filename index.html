@@ -487,24 +487,11 @@
 
     <main>
       
-      <!-- HOME -->
-      <section class="screen" id="home" data-title="Boys Trip">
-        <p class="lede">Sep 15–21 · Pack light. Fly dark. Hit the strip.</p>
-        <div class="home-nav">
-          <button type="button" class="home-card" data-jump="pack">
-            <span class="hc-k">Pack</span>
-            <span class="hc-v">Checklist</span>
-          </button>
-          <button type="button" class="home-card" data-jump="days">
-            <span class="hc-k">Plan</span>
-            <span class="hc-v">Itinerary</span>
-          </button>
-          <button type="button" class="home-card" data-jump="fly">
-            <span class="hc-k">Flights</span>
-            <span class="hc-v">G77AJ5</span>
-          </button>
-        </div>
-        <div class="home-note">
+      <!-- PACK -->
+      <section class="screen active" id="pack" data-title="Packing">
+        <p class="lede">Lock the bag. Tap to clear.</p>
+        
+        <div class="home-note" style="margin-bottom: 18px;">
           <div class="section-h">Tonight → wheels up</div>
           <ul class="bullets">
             <li>Arrive JFK by <strong>~9:30am</strong> Tue Sep 15</li>
@@ -512,11 +499,7 @@
             <li>Travelers: Dushan + Anu (Anupama Liyanagamage)</li>
           </ul>
         </div>
-      </section>
 
-      <!-- PACK -->
-      <section class="screen" id="pack" data-title="Packing">
-        <p class="lede">Lock the bag. Tap to clear.</p>
         <div class="progress-wrap">
           <span class="count" id="packCount">0 / 0</span>
           <div class="bar"><i id="packBar"></i></div>
@@ -613,22 +596,18 @@
     </main>
 
     <nav class="tabs" role="tablist">
-      <button class="tab active" data-tab="home" aria-label="Home">
-        <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
-        Home
-        <span class="dot"></span>
-      </button>
-      <button class="tab" data-tab="pack" aria-label="Pack">
+      <button class="tab active" data-tab="pack" aria-label="Pack">
         <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
         Pack
+        <span class="dot"></span>
       </button>
       <button class="tab" data-tab="days" aria-label="Plan">
         <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
         Plan
       </button>
-      <button class="tab" data-tab="fly" aria-label="Flights">
+      <button class="tab" data-tab="fly" aria-label="Fly">
         <svg viewBox="0 0 24 24"><path d="M2 12l20-8-8 20-2-8-10-4z"/></svg>
-        Flights
+        Fly
       </button>
     </nav>
   </div>
@@ -781,9 +760,13 @@ document.getElementById("confCopy").addEventListener("click", async () => {
   }
 });
 
-// Deep-link: ?tab=home|pack|days|fly
+// Deep-link: ?tab=pack|days|fly (aliases: plan→days, flights→fly, home→pack)
 (function openTabFromQuery(){
-  const tab = new URLSearchParams(location.search).get('tab');
+  let tab = new URLSearchParams(location.search).get('tab');
+  // Map aliases to canonical tab names
+  if (tab === 'plan') tab = 'days';
+  if (tab === 'flights') tab = 'fly';
+  if (tab === 'home') tab = 'pack';
   if (tab && document.querySelector(`[data-tab="${tab}"]`)) {
     document.querySelector(`[data-tab="${tab}"]`).click();
   }
@@ -797,15 +780,6 @@ document.querySelectorAll('[data-jump]').forEach(btn => {
     if (tab) tab.click();
   });
 });
-// Default home active
-(function(){
-  const home = document.getElementById('home');
-  const pack = document.getElementById('pack');
-  if (home && pack) {
-    pack.classList.remove('active');
-    home.classList.add('active');
-  }
-})();
 
 </script>
 </body>
