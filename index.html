@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="theme-color" content="#0A0A0B" />
+<title>BOYS TRIP · Sep 15–21</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0A0A0B;
+    --bg-elevated: #121214;
+    --bg-chip: #1A1A1E;
+    --border: #2A2A30;
+    --border-strong: #3A3A42;
+    --text: #F4F4F5;
+    --text-muted: #9A9AA3;
+    --text-dim: #5C5C66;
+    --accent: #C8F542;
+    --accent-dim: rgba(200, 245, 66, 0.16);
+    --flight: #7AA2FF;
+    --sf: #FF9F43;
+    --safe-b: env(safe-area-inset-bottom, 0px);
+    --tab-h: 64px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: #000;
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    min-height: 100%;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    display: flex;
+    justify-content: center;
+    min-height: 100dvh;
+  }
+  .phone {
+    width: 100%;
+    max-width: 430px;
+    min-height: 100dvh;
+    background: var(--bg);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #111;
+    border-right: 1px solid #111;
+  }
+  header.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding: 14px 16px 12px;
+    background: rgba(10,10,11,0.82);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+  }
+  .brand {
+    font-family: Syne, sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+  }
+  .trip-title {
+    font-family: Syne, sans-serif;
+    font-weight: 700;
+    font-size: 26px;
+    letter-spacing: -0.03em;
+    margin-top: 6px;
+    line-height: 1.1;
+  }
+  .trip-sub {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 16px calc(var(--tab-h) + var(--safe-b) + 20px);
+  }
+  .screen { display: none; }
+  .screen.active { display: block; }
+  .lede {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+  .progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .progress-wrap .count {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 600;
+    min-width: 52px;
+  }
+  .bar {
+    flex: 1;
+    height: 4px;
+    background: var(--bg-chip);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .bar > i {
+    display: block;
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    border-radius: 99px;
+    transition: width 0.2s ease;
+  }
+  .section {
+    margin-bottom: 22px;
+  }
+  .section-h {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    padding-left: 2px;
+  }
+  .check-list {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .check-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 14px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.12s;
+  }
+  .check-row:last-child { border-bottom: 0; }
+  .check-row:active { background: var(--bg-chip); }
+  .check-row.done .label {
+    color: var(--text-dim);
+    text-decoration: line-through;
+  }
+  .box {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-strong);
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    transition: all 0.12s ease;
+  }
+  .check-row.done .box {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .box svg { opacity: 0; width: 12px; height: 12px; }
+  .check-row.done .box svg { opacity: 1; }
+  .label { font-size: 15px; font-weight: 500; line-height: 1.3; }
+
+  .day-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px 14px 14px 0;
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 4px 10px;
+    margin-bottom: 10px;
+    position: relative;
+    transition: transform 0.12s, border-color 0.12s;
+  }
+  .day-card:active { transform: scale(0.985); }
+  .day-card.today {
+    border-color: var(--accent);
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+  .day-left {
+    text-align: center;
+    padding-top: 2px;
+  }
+  .dow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+  .dom {
+    font-family: Syne, sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-top: 2px;
+  }
+  .day-body { padding-right: 8px; }
+  .day-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+  .day-title {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .chip {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 99px;
+    background: var(--bg-chip);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+  .chip.today { background: var(--accent-dim); color: var(--accent); border-color: transparent; }
+  .chip.sf { color: var(--sf); border-color: rgba(255,159,67,0.35); background: rgba(255,159,67,0.08); }
+  .chip.vegas { color: #E879F9; border-color: rgba(232,121,249,0.3); background: rgba(232,121,249,0.08); }
+  .chip.fly { color: var(--flight); border-color: rgba(122,162,255,0.35); background: rgba(122,162,255,0.08); }
+  .bullets {
+    list-style: none;
+    margin-top: 6px;
+  }
+  .bullets li {
+    font-size: 13px;
+    color: var(--text-muted);
+    padding: 2px 0;
+    padding-left: 12px;
+    position: relative;
+  }
+  .bullets li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 9px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--text-dim);
+  }
+
+  .conf {
+    background: linear-gradient(135deg, #14161c, #101218);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+  }
+  .conf .k {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .conf .v {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--flight);
+    letter-spacing: 0.04em;
+    margin-top: 4px;
+  }
+  .conf .copy {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: var(--bg-chip);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 8px 12px;
+  }
+  .flight {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .flight .strip {
+    background: #151820;
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .flight .strip .dir {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+  }
+  .flight .strip .flt {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    color: var(--flight);
+    font-weight: 600;
+  }
+  .flight .body { padding: 16px 14px 18px; }
+  .route {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: end;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .apt {
+    font-family: Syne, sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .apt.right { text-align: right; }
+  .time {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    font-weight: 500;
+  }
+  .apt.right .time { text-align: right; }
+  .mid {
+    text-align: center;
+    padding-bottom: 8px;
+    color: var(--text-dim);
+    font-size: 12px;
+  }
+  .mid .line {
+    width: 48px;
+    height: 1px;
+    background: var(--border-strong);
+    margin: 0 auto 6px;
+    position: relative;
+  }
+  .mid .line::after {
+    content: "✈";
+    position: absolute;
+    right: -2px;
+    top: -9px;
+    font-size: 11px;
+    color: var(--flight);
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+  .seat {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: 10px;
+    background: var(--accent-dim);
+    color: var(--accent);
+    border: 1px solid rgba(200,245,66,0.25);
+  }
+  .date-chip {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 6px 10px;
+    border-radius: 10px;
+    background: var(--bg-chip);
+    border: 1px solid var(--border);
+  }
+  .fly-note {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-align: center;
+    margin-top: 8px;
+  }
+
+  nav.tabs {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 430px;
+    height: calc(var(--tab-h) + var(--safe-b));
+    padding-bottom: var(--safe-b);
+    background: rgba(10,10,11,0.92);
+    backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    z-index: 30;
+  }
+  .tab {
+    background: none;
+    border: 0;
+    color: var(--text-dim);
+    font-family: Inter, sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tab svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+  .tab.active { color: var(--accent); }
+  .tab.active .dot {
+    width: 4px; height: 4px; border-radius: 50%; background: var(--accent); margin-top: -2px;
+  }
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(var(--tab-h) + var(--safe-b) + 16px);
+    transform: translateX(-50%) translateY(20px);
+    background: var(--bg-chip);
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 16px;
+    border-radius: 99px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.2s;
+    z-index: 40;
+    max-width: 90%;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+
+  .home-nav { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin: 8px 0 18px; }
+  .home-card {
+    background: var(--bg-elevated); border:1px solid var(--border); border-radius:16px;
+    padding:16px 12px; min-height:88px; color:var(--text); text-align:left; cursor:pointer;
+    display:flex; flex-direction:column; gap:6px; font:inherit;
+  }
+  .home-card:active { transform: scale(.97); }
+  .hc-k { font-family: Syne, sans-serif; font-weight:700; font-size:15px; }
+  .hc-v { font-size:12px; color: var(--text-muted); }
+  .home-note {
+    background: var(--bg-elevated); border:1px solid var(--border); border-radius:16px; padding:14px;
+  }
+  .home-note .bullets { margin-top:8px; padding-left:18px; color:var(--text-muted); font-size:13px; line-height:1.55; }
+  .home-note strong { color: var(--text); }
+  .traveler-block { margin: 12px 0 16px; padding:14px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:16px; }
+  .traveler-block .k { font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--text-muted); margin-bottom:8px; }
+  .traveler-block p { font-size:14px; margin:4px 0; }
+  .traveler-block .muted { color:var(--text-muted); font-size:12px; }
+
+</style>
+</head>
+<body>
+  <div class="phone">
+    <header class="app-header">
+      <div class="brand">BOYS TRIP</div>
+      <div class="trip-title" id="screenTitle">Boys Trip</div>
+      <div class="trip-sub">Sep 15–21 · Vegas + SF · Dushan + Anu</div>
+    </header>
+
+    <main>
+      
+      <!-- HOME -->
+      <section class="screen" id="home" data-title="Boys Trip">
+        <p class="lede">Sep 15–21 · Pack light. Fly dark. Hit the strip.</p>
+        <div class="home-nav">
+          <button type="button" class="home-card" data-jump="pack">
+            <span class="hc-k">Pack</span>
+            <span class="hc-v">Checklist</span>
+          </button>
+          <button type="button" class="home-card" data-jump="days">
+            <span class="hc-k">Plan</span>
+            <span class="hc-v">Itinerary</span>
+          </button>
+          <button type="button" class="home-card" data-jump="fly">
+            <span class="hc-k">Flights</span>
+            <span class="hc-v">G77AJ5</span>
+          </button>
+        </div>
+        <div class="home-note">
+          <div class="section-h">Tonight → wheels up</div>
+          <ul class="bullets">
+            <li>Arrive JFK by <strong>~9:30am</strong> Tue Sep 15</li>
+            <li>DL807 · seats <strong>41A / 41B</strong> · Main Basic</li>
+            <li>Travelers: Dushan + Anu (Anupama Liyanagamage)</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- PACK -->
+      <section class="screen" id="pack" data-title="Packing">
+        <p class="lede">Lock the bag. Tap to clear.</p>
+        <div class="progress-wrap">
+          <span class="count" id="packCount">0 / 0</span>
+          <div class="bar"><i id="packBar"></i></div>
+        </div>
+
+        <div class="section">
+          <div class="section-h">Wear for flight</div>
+          <div class="check-list" data-group="wear"></div>
+        </div>
+        <div class="section">
+          <div class="section-h">Carry-on clothes</div>
+          <div class="check-list" data-group="clothes"></div>
+        </div>
+        <div class="section">
+          <div class="section-h">Personal & kit</div>
+          <div class="check-list" data-group="kit"></div>
+        </div>
+      </section>
+
+      <!-- DAYS -->
+      <section class="screen" id="days" data-title="Itinerary">
+        <p class="lede">Day cards · sketch as you go.</p>
+        <div id="dayList"></div>
+      </section>
+
+      <!-- FLY -->
+      <section class="screen" id="fly" data-title="Flights">
+        <p class="lede">Delta · Main Basic · confirmation ready.</p>
+
+        <div class="traveler-block">
+          <div class="k">Travelers · Main Basic</div>
+          <p><strong>Dushan Perera</strong></p>
+          <p><strong>Anu</strong> <span class="muted">(Anupama Liyanagamage)</span></p>
+          <p class="muted" style="margin-top:10px">Arrive JFK by ~9:30am Tue Sep 15 for outbound.</p>
+        </div>
+
+        <div class="conf" id="confCopy" title="Copy confirmation">
+          <div>
+            <div class="k">Confirmation</div>
+            <div class="v">G77AJ5</div>
+          </div>
+          <div class="copy" id="copyLabel">Copy</div>
+        </div>
+
+        <article class="flight">
+          <div class="strip">
+            <span class="dir">OUT · TUE SEP 15</span>
+            <span class="flt">DL807</span>
+          </div>
+          <div class="body">
+            <div class="route">
+              <div>
+                <div class="apt">JFK</div>
+                <div class="time">11:30</div>
+              </div>
+              <div class="mid"><div class="line"></div>nonstop</div>
+              <div class="apt right">
+                <div class="apt">LAS</div>
+                <div class="time">14:02</div>
+              </div>
+            </div>
+            <div class="meta-row">
+              <span class="seat">41A</span>
+              <span class="seat">41B</span>
+              <span class="date-chip">2 travelers</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="flight">
+          <div class="strip">
+            <span class="dir">HOME · MON SEP 21</span>
+            <span class="flt">DL1102</span>
+          </div>
+          <div class="body">
+            <div class="route">
+              <div>
+                <div class="apt">LAS</div>
+                <div class="time">15:35</div>
+              </div>
+              <div class="mid"><div class="line"></div>nonstop</div>
+              <div class="apt right">
+                <div class="apt">JFK</div>
+                <div class="time">23:40</div>
+              </div>
+            </div>
+            <div class="meta-row">
+              <span class="date-chip">Same trip · G77AJ5</span>
+            </div>
+          </div>
+        </article>
+        <p class="fly-note">Check-in opens 24h before · Delta app</p>
+      </section>
+    </main>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="home" aria-label="Home">
+        <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+        Home
+        <span class="dot"></span>
+      </button>
+      <button class="tab" data-tab="pack" aria-label="Pack">
+        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Pack
+      </button>
+      <button class="tab" data-tab="days" aria-label="Plan">
+        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+        Plan
+      </button>
+      <button class="tab" data-tab="fly" aria-label="Flights">
+        <svg viewBox="0 0 24 24"><path d="M2 12l20-8-8 20-2-8-10-4z"/></svg>
+        Flights
+      </button>
+    </nav>
+  </div>
+  <div class="toast" id="toast"></div>
+
+<script>
+const PACK = {
+  wear: ["Dark tee/polo + black pants + sneakers"],
+  clothes: [
+    "Black polo L",
+    "Navy polo L",
+    "2 dark tees",
+    "Mesh undershirt",
+    "Black pants",
+    "Navy pants",
+    "2 shorts (owned)",
+    "2 swim trunks",
+    "Underwear ×7",
+    "Socks ×7",
+    "Slides",
+    "Light layer",
+    "Optional Marshalls navy patterned shirt"
+  ],
+  kit: [
+    "Toiletries / meds",
+    "Chargers + power bank (accessible)",
+    "ID / REAL ID or passport",
+    "Wallet",
+    "Earbuds",
+    "Boarding pass"
+  ]
+};
+
+const DAYS = [
+  { dow:"Tue", dom:"15", title:"Touchdown Vegas", chips:[["vegas","Vegas"],["fly","Arrive"]], bullets:["DL807 lands 2:02p","Hotel check-in","Strip night"] },
+  { dow:"Wed", dom:"16", title:"Drive → SF", chips:[["sf","SF overnight"]], bullets:["Early out of Vegas","Road north","SF night"] },
+  { dow:"Thu", dom:"17", title:"SF → Vegas", chips:[["sf","Road"],["vegas","Vegas"]], bullets:["Morning in SF","Drive back","Vegas evening"] },
+  { dow:"Fri", dom:"18", title:"Vegas day", chips:[["vegas","Vegas"]], bullets:["Pool / leisure","Dinner TBD"] },
+  { dow:"Sat", dom:"19", title:"Vegas night", chips:[["vegas","Vegas"]], bullets:["Boys night","Venues TBD"] },
+  { dow:"Sun", dom:"20", title:"Wind-down", chips:[["vegas","Vegas"]], bullets:["Easy day","Start packing"] },
+  { dow:"Mon", dom:"21", title:"Homebound", chips:[["fly","Fly home"]], bullets:["DL1102 3:35p LAS","JFK 11:40p"] }
+];
+
+const checkSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>`;
+
+function loadPack() {
+  try { return JSON.parse(localStorage.getItem("bt-pack-v1") || "{}"); }
+  catch { return {}; }
+}
+function savePack(state) {
+  localStorage.setItem("bt-pack-v1", JSON.stringify(state));
+}
+
+function renderPack() {
+  const state = loadPack();
+  let total = 0, done = 0;
+  Object.entries(PACK).forEach(([group, items]) => {
+    const el = document.querySelector(`[data-group="${group}"]`);
+    el.innerHTML = "";
+    items.forEach((label, i) => {
+      const id = `${group}:${i}`;
+      total++;
+      const isDone = !!state[id];
+      if (isDone) done++;
+      const row = document.createElement("div");
+      row.className = "check-row" + (isDone ? " done" : "");
+      row.innerHTML = `<div class="box">${checkSvg}</div><div class="label">${label}</div>`;
+      row.addEventListener("click", () => {
+        const s = loadPack();
+        s[id] = !s[id];
+        savePack(s);
+        renderPack();
+        if (Object.keys(s).filter(k => s[k]).length === total) toast("Bag’s locked. Go.");
+      });
+      el.appendChild(row);
+    });
+  });
+  document.getElementById("packCount").textContent = `${done} / ${total}`;
+  document.getElementById("packBar").style.width = (total ? (done/total)*100 : 0) + "%";
+}
+
+function todayDom() {
+  // Trip is Sep 2026 — highlight matching day-of-month if in range
+  const now = new Date();
+  if (now.getFullYear() === 2026 && now.getMonth() === 8 && now.getDate() >= 15 && now.getDate() <= 21) {
+    return String(now.getDate());
+  }
+  return null; // demo: highlight first day as reference if not in trip window — none
+}
+
+function renderDays() {
+  const list = document.getElementById("dayList");
+  const today = todayDom();
+  list.innerHTML = DAYS.map(d => {
+    const isToday = today === d.dom;
+    const chips = [
+      ...(isToday ? [['today','TODAY']] : []),
+      ...d.chips
+    ].map(([c,t]) => `<span class="chip ${c}">${t}</span>`).join("");
+    const bullets = d.bullets.map(b => `<li>${b}</li>`).join("");
+    return `<article class="day-card${isToday ? " today" : ""}" data-day="${d.dom}">
+      <div class="day-left"><div class="dow">${d.dow}</div><div class="dom">${d.dom}</div></div>
+      <div class="day-body">
+        <div class="day-top"><div class="day-title">${d.title}</div>${chips}</div>
+        <ul class="bullets">${bullets}</ul>
+      </div>
+    </article>`;
+  }).join("");
+  list.querySelectorAll(".day-card").forEach(card => {
+    card.addEventListener("click", () => toast("Edit mode next — sketch stays for v1"));
+  });
+}
+
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toast._x);
+  toast._x = setTimeout(() => t.classList.remove("show"), 1800);
+}
+
+document.querySelectorAll(".tab").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const id = btn.dataset.tab;
+    document.querySelectorAll(".tab").forEach(b => {
+      b.classList.toggle("active", b === btn);
+      if (b === btn && !b.querySelector(".dot")) {
+        const dot = document.createElement("span");
+        dot.className = "dot";
+        b.appendChild(dot);
+      }
+      if (b !== btn) b.querySelector(".dot")?.remove();
+    });
+    document.querySelectorAll(".screen").forEach(s => {
+      const on = s.id === id;
+      s.classList.toggle("active", on);
+      if (on) document.getElementById("screenTitle").textContent = s.dataset.title;
+    });
+  });
+});
+
+document.getElementById("confCopy").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText("G77AJ5");
+    document.getElementById("copyLabel").textContent = "Copied";
+    toast("G77AJ5 copied");
+    setTimeout(() => document.getElementById("copyLabel").textContent = "Copy", 1500);
+  } catch {
+    toast("G77AJ5");
+  }
+});
+
+// Deep-link: ?tab=home|pack|days|fly
+(function openTabFromQuery(){
+  const tab = new URLSearchParams(location.search).get('tab');
+  if (tab && document.querySelector(`[data-tab="${tab}"]`)) {
+    document.querySelector(`[data-tab="${tab}"]`).click();
+  }
+})();
+renderPack();
+renderDays();
+
+document.querySelectorAll('[data-jump]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = document.querySelector(`.tab[data-tab="${btn.dataset.jump}"]`);
+    if (tab) tab.click();
+  });
+});
+// Default home active
+(function(){
+  const home = document.getElementById('home');
+  const pack = document.getElementById('pack');
+  if (home && pack) {
+    pack.classList.remove('active');
+    home.classList.add('active');
+  }
+})();
+
+</script>
+</body>
+</html>
