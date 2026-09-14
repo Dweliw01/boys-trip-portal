@@ -165,6 +165,9 @@
     place-items: center;
     transition: all 0.12s ease;
   }
+  .check-row:active .box {
+    transform: scale(0.92);
+  }
   .check-row.done .box {
     background: var(--accent);
     border-color: var(--accent);
@@ -311,7 +314,7 @@
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.1em;
-    color: var(--accent);
+    color: var(--flight);
   }
   .flight .strip .flt {
     font-family: "JetBrains Mono", monospace;
@@ -470,10 +473,11 @@
   }
   .home-note .bullets { margin-top:8px; padding-left:18px; color:var(--text-muted); font-size:13px; line-height:1.55; }
   .home-note strong { color: var(--text); }
-  .traveler-block { margin: 12px 0 16px; padding:14px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:16px; }
-  .traveler-block .k { font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--text-muted); margin-bottom:8px; }
-  .traveler-block p { font-size:14px; margin:4px 0; }
-  .traveler-block .muted { color:var(--text-muted); font-size:12px; }
+  .traveler-block { margin: 12px 0 16px; padding:12px 14px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:16px; opacity:0.85; }
+  .traveler-block .k { font-size:10px; text-transform:uppercase; letter-spacing:.08em; color:var(--text-dim); margin-bottom:6px; }
+  .traveler-block p { font-size:13px; margin:3px 0; color:var(--text-muted); }
+  .traveler-block p strong { font-weight:600; }
+  .traveler-block .muted { color:var(--text-dim); font-size:11px; }
 
 </style>
 </head>
@@ -529,19 +533,19 @@
       <section class="screen" id="fly" data-title="Flights">
         <p class="lede">Delta · Main Basic · confirmation ready.</p>
 
-        <div class="traveler-block">
-          <div class="k">Travelers · Main Basic</div>
-          <p><strong>Dushan Perera</strong></p>
-          <p><strong>Anu</strong> <span class="muted">(Anupama Liyanagamage)</span></p>
-          <p class="muted" style="margin-top:10px">Arrive JFK by ~9:30am Tue Sep 15 for outbound.</p>
-        </div>
-
         <div class="conf" id="confCopy" title="Copy confirmation">
           <div>
             <div class="k">Confirmation</div>
             <div class="v">G77AJ5</div>
           </div>
           <div class="copy" id="copyLabel">Copy</div>
+        </div>
+
+        <div class="traveler-block">
+          <div class="k">Travelers · Main Basic</div>
+          <p><strong>Dushan Perera</strong></p>
+          <p><strong>Anu</strong> <span class="muted">(Anupama Liyanagamage)</span></p>
+          <p class="muted" style="margin-top:10px">Arrive JFK by ~9:30am Tue Sep 15 for outbound.</p>
         </div>
 
         <article class="flight">
@@ -703,15 +707,25 @@ function renderDays() {
   const today = todayDom();
   list.innerHTML = DAYS.map(d => {
     const isToday = today === d.dom;
-    const chips = [
-      ...(isToday ? [['today','TODAY']] : []),
-      ...d.chips
-    ].map(([c,t]) => `<span class="chip ${c}">${t}</span>`).join("");
+    // Wed (dom 16) SF overnight chip comes first, even before TODAY
+    let chips;
+    if (d.dom === "16" && isToday) {
+      chips = [
+        ...d.chips,
+        ['today','TODAY']
+      ];
+    } else {
+      chips = [
+        ...(isToday ? [['today','TODAY']] : []),
+        ...d.chips
+      ];
+    }
+    const chipHtml = chips.map(([c,t]) => `<span class="chip ${c}">${t}</span>`).join("");
     const bullets = d.bullets.map(b => `<li>${b}</li>`).join("");
     return `<article class="day-card${isToday ? " today" : ""}" data-day="${d.dom}">
       <div class="day-left"><div class="dow">${d.dow}</div><div class="dom">${d.dom}</div></div>
       <div class="day-body">
-        <div class="day-top"><div class="day-title">${d.title}</div>${chips}</div>
+        <div class="day-top"><div class="day-title">${d.title}</div>${chipHtml}</div>
         <ul class="bullets">${bullets}</ul>
       </div>
     </article>`;
